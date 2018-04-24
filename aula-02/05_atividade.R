@@ -27,7 +27,7 @@ length(acessos_alunos)
 ## Utilizando o seu código de aluno da Uniritter como nome de um valor da lista, imprima uma linha informando quantos acessos
 ## você fez. A linha deve ser impressa na Console, com um texto que diga o seu código de aluno e o valor conforme o seguinte exemplo:
 ## "O aluno <alu...> realizou N acessos."
-
+resposta[[alu201830198]]
 ## Dica 1: Utilize a função paste() para composição do texto que será impresso. 
 ## Dica 2: Vimos exemplos disto nos materiais dos tipos numéricos e das estruturas de dados.
 ### # ###

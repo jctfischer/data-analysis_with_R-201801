@@ -3,19 +3,20 @@
 ## Vamos começar carregando um ambiente previamente criado para esta aula. 
 ## Nas aulas seguintes trabalharemos com fontes de dados em arquivos de formatos diversos.
 load("aula-02/data/dados_exercicio.RData")
-
 ### 1 ####
 ## Inicie mostrando uma prévia do conteúdo da variável acessos_alunos
 ## 
 ## Dica 1: No material sobre estruturas de dados vimos como exibir uma prévia do conteúdo de uma variável com 2 funções diferentes
+resposta <- acessos_alunos
+str(resposta)
 ## Dica 2: Na primeira aula vimos uma função do RStudio que permite visualizar o conteúdo de uma variável, mas neste caso 
 ##         quero ver uma saída na Console.
 ### # ####
-
-
+print(acessos_alunos)
 
 ### 2 ###
 ## Quantos elementos a variável acessos_alunos possui? Utilize uma função do R que retorna o tamanho da variável.
+length(acessos_alunos)
 
 ## Dica: Vimos um exemplo no mesmo material sobre estruturas de dados
 ### # ###

@@ -26,7 +26,7 @@ c(0, 1, 1, 2, 3, 5)
 
 # A atribuição é na direção da seta =)
 c(0, 1, 1, 2, 3, 5) -> init_fibonacci
-
+c(0, 1, 1, 2, 3, 5) + c(0, 1, 3, 4, 0, 1)
 #' 
 #' Atomic vectors são estruturas planas, não permitindo que um vetor seja composto de outros vetores. O exemplo abaixo demonstra que a tentativa de aninhar vetores resulta em um vetor plano idêntico ao vetor criado no exemplo anterior.
 #' 

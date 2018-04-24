@@ -57,4 +57,3 @@ As operações E e OU unitárias existem para serem aplicadas em testes condicio
 | max(x)    | Máximo de um vetor           | `max(20:40)` = `r max(20:40)`     |
 | range(x)  | Mínimo e máximo de um vetor  | `range(20:40)` = `r range(20:40)` |
 | sum(x)    | Soma dos valores de um vetor | `sum(1:5)` = `r sum(1:5)`         |
-

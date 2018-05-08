@@ -1,5 +1,5 @@
 #' ---
-#' title: "Estatística Descritiva & R"
+#' title: "Estat�?stica Descritiva & R"
 #' output:
 #'   html_document:
 #'     df_print: paged
@@ -26,7 +26,7 @@
 ## ----"Dataset", message=FALSE, warning=FALSE-----------------------------
 library(tidyverse)
 
-salarios <- read_csv("aula-03/data/201802_dados_salarios_servidores.csv.gz")
+salarios <- read_csv("C:/Users/alu201830198/data-analysis_with_R-201801/aula-03/data/201802_dados_salarios_servidores.csv.gz")
 
 head(salarios, 20)
 
@@ -61,7 +61,7 @@ salarios %>%
 #' 
 #' > Variáveis, portanto, podem apresentar uma quantidade muito grande de valores.
 #' 
-#' Utilizamos estatísticas descritivas para resumir e descrever o conjunto de valores que uma variável representa.
+#' Utilizamos estat�?sticas descritivas para resumir e descrever o conjunto de valores que uma variável representa.
 #' 
 #' ```
 #' Nota: Não farei distinção entre população e amostra exceto quando indicado
@@ -69,7 +69,7 @@ salarios %>%
 #' 
 #' ## Medidas de Tendência Central
 #' 
-#' Medidas de posição apresentam o valor típico de uma variável
+#' Medidas de posição apresentam o valor t�?pico de uma variável
 #' 
 #' > Uma estimativa do valor esperado para a variável
 #' 
@@ -102,7 +102,7 @@ subset_salarios %>%
   arrange(desc(salario_medio))
 
 #' 
-#' Uma propriedade da média aritmética é ela é a medida de tendência central que minimiza o resíduo (diferença entre o valor real e o valor estimado) da amostra. A soma dos resíduos  sempre será zero.
+#' Uma propriedade da média aritmética é ela é a medida de tendência central que minimiza o res�?duo (diferença entre o valor real e o valor estimado) da amostra. A soma dos res�?duos  sempre será zero.
 #' 
 ## ------------------------------------------------------------------------
 subset_salarios %>%
@@ -135,20 +135,41 @@ subset_salarios %>%
 #' 
 #' >> ATIVIDADE
 #' 
-#' Utilizando a função `year`, adicione ao dataset o Ano de Ingresso. A partir desta nova variável, determine o tempo médio de trabalho dos servidores, em nível nacional e por UF. Utilizar a data do campo `DATA_DIPLOMA_INGRESSO_SERVICOPUBLICO`. Nos dois casos, utilizar a combinação das funções `summarise` e `mean`.
+#' Utilizando a função `year`, adicione ao dataset o Ano de Ingresso. A partir desta nova variável, determine o tempo médio de trabalho dos servidores, em n�?vel nacional e por UF. Utilizar a data do campo `DATA_DIPLOMA_INGRESSO_SERVICOPUBLICO`. Nos dois casos, utilizar a combinação das funções `summarise` e `mean`.
 #' 
+  
 #' Por fim, determine a média salarial por ano de ingresso.
 #' 
+
+
+
 ## ------------------------------------------------------------------------
 print("Atividade")
 ## Modificar o Dataset para criação de nova variável
+subset_salarios %>%
+  mutate( ANO_INGRESSO  = year(DATA_DIPLOMA_INGRESSO_SERVICOPUBLICO) ) -> subset_sal_tempo
 
-## Determine o tempo médio de trabalho em anos, em nível nacional
+## Determine o tempo médio de trabalho em anos, em n�?vel nacional
+
+subset_sal_tempo %>%
+  summarise(tempo_medio = mean(year(today()) - ANO_INGRESSO), servidores = n()) %>%
+  ungroup()
 
 ## Determine o tempo médio de trabalho em anos, por UF
 
+subset_sal_tempo %>%
+  group_by(UF_EXERCICIO) %>%
+  summarise(tempo_medio = mean(year(today()) - ANO_INGRESSO), servidores = n()) %>%
+  ungroup() %>%
+  arrange(desc(tempo_medio)) -> subset_sal_tempo_medio
+
 ## Determine a média salarial por ano de ingresso
 
+subset_sal_tempo %>%
+  group_by(ANO_INGRESSO) %>%
+  summarise(sala_medio = mean(REMUNERACAO_REAIS), servidores = n()) %>%
+  ungroup() %>%
+  arrange(desc(ANO_INGRESSO)) -> subset_media_sal_ano
 
 #' >> FIM DA ATIVIDADE
 #' 
@@ -156,7 +177,7 @@ print("Atividade")
 #' 
 #' A mediana é o elemento central do conjunto (**ordenado**) de valores de uma variável.
 #' 
-#' * A figura do elemento central só existe quando o número de observações é ímpar!
+#' * A figura do elemento central só existe quando o número de observações é �?mpar!
 #' * Quando o tamanho for par, o elemento central por definicão será a média entre os dois valores mais ao centro. Algumas variações assumem o menor dentre os dois valores, ou o maior dentre os dois valores.
 #' 
 #' Em R:
@@ -215,7 +236,7 @@ print("Atividade")
 #' 
 #' ~~Variabilidade~~ Dispersão:
 #' 
-#' Além de saber o elemento típico do conjunto, é importante conhecer o quanto os valores se aproximam deste elemento típico, ou se estão espalhados/distribuídos em posições distantes do elemento central.
+#' Além de saber o elemento t�?pico do conjunto, é importante conhecer o quanto os valores se aproximam deste elemento t�?pico, ou se estão espalhados/distribu�?dos em posições distantes do elemento central.
 #' 
 #' A medida de dispersão mais utilizada com Média Aritmética é o Desvio Padrão. 
 #' 
@@ -225,11 +246,11 @@ print("Atividade")
 #' 
 #' O principal conceito para entendimento do Desvio Padrão está relacionado ao cálculo da média em si.
 #' 
-#' Como vimos anteriormente, a soma dos resíduos é zero. Ao tentar sumarizar as distâncias dos valores em relação à média perdemos a própria noção de distância. O cálculo do Desvio Padrão utiliza o conceito de Variância para contornar este problema.
+#' Como vimos anteriormente, a soma dos res�?duos é zero. Ao tentar sumarizar as distâncias dos valores em relação à média perdemos a própria noção de distância. O cálculo do Desvio Padrão utiliza o conceito de Variância para contornar este problema.
 #' 
 #' #### Variância
 #' 
-#' A variância utiliza o quadrado do resíduo para eliminar o sinal negativo. Além do efeito de transformar todos resíduos em valores positivos, o uso do quadrado possui propriedades que facilitam os cálculos de otimizações (a derivada do quadrado é de fácil aplicação).
+#' A variância utiliza o quadrado do res�?duo para eliminar o sinal negativo. Além do efeito de transformar todos res�?duos em valores positivos, o uso do quadrado possui propriedades que facilitam os cálculos de otimizações (a derivada do quadrado é de fácil aplicação).
 #' 
 #' $$Variancia = s^{2} = \frac{1}{n-1} \times \sum_{i=1}^{n}(x_{i} - \overline{x})^{2}$$
 #' 
@@ -244,11 +265,11 @@ print("Atividade")
 var(subset_salarios$REMUNERACAO_REAIS)
 
 #' 
-#' Ao elevar os resíduos ao quadrado estamos também modificando a unidade de medida do resíduo. Enquanto subtraímos a média da observação, como no exemplo dos salários, temos o resíduo na mesma unidade de medida (R$ no nosso caso). Ao calcular a variância, passamos para uma unidade de medida irreal, que seria algo como $R \$ ^{2}$
+#' Ao elevar os res�?duos ao quadrado estamos também modificando a unidade de medida do res�?duo. Enquanto subtra�?mos a média da observação, como no exemplo dos salários, temos o res�?duo na mesma unidade de medida (R$ no nosso caso). Ao calcular a variância, passamos para uma unidade de medida irreal, que seria algo como $R \$ ^{2}$
 #' 
 #' #### Desvio padrão
 #' 
-#' O desvio padrão é definido pela raíz quadrada da variância:
+#' O desvio padrão é definido pela ra�?z quadrada da variância:
 #' 
 #' $$ s = \sqrt{Variancia} $$
 #' em R:
@@ -260,7 +281,7 @@ var(subset_salarios$REMUNERACAO_REAIS)
 sd( subset_salarios$REMUNERACAO_REAIS )
 
 #' 
-#' Ao aplicar a raíz quadrada, retornamos para a unidade de medida original, que é em R\$. Temos então um desvio padrão de R\$ 6578,81. Ao comparar com a média, que é de R\$ 9954,77, observamos que um desvio corresponde a 66% da média. Não há uma regra geral para intepretação desta proporção, mas vamos considerar que temos uma grande dispersão de valores em torno da média. Essa medida é chamada de __Coeficiente de Variação__, e tem a característica de ser independente de unidade de medida.
+#' Ao aplicar a ra�?z quadrada, retornamos para a unidade de medida original, que é em R\$. Temos então um desvio padrão de R\$ 6578,81. Ao comparar com a média, que é de R\$ 9954,77, observamos que um desvio corresponde a 66% da média. Não há uma regra geral para intepretação desta proporção, mas vamos considerar que temos uma grande dispersão de valores em torno da média. Essa medida é chamada de __Coeficiente de Variação__, e tem a caracter�?stica de ser independente de unidade de medida.
 #' 
 ## ------------------------------------------------------------------------
 subset_salarios %>%
@@ -325,7 +346,7 @@ print("Atividade")
 #' 
 #' #### Desvio absoluto da mediana
 #' 
-#' O Desvio Absoluto da Mediana é definido como a mediana dos resíduos absolutos:
+#' O Desvio Absoluto da Mediana é definido como a mediana dos res�?duos absolutos:
 #' 
 #' No R:
 #' 

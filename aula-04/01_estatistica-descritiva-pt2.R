@@ -43,7 +43,7 @@ options(encoding = "UTF-8")
 ## ----"Dataset", message=FALSE, warning=FALSE-----------------------------
 library(tidyverse)
 
-subset_salarios <- read_csv("aula-04/data/201802_dados_salarios_servidores.csv.gz") %>%
+subset_salarios <- read_csv("C:/Users/alu201830198/data-analysis_with_R-201801/aula-03/data/201802_dados_salarios_servidores.csv.gz")%>%
   filter(REMUNERACAO_REAIS > 900, !is.na(UF_EXERCICIO)) %>%
   select(ID_SERVIDOR_PORTAL, REMUNERACAO_REAIS, DESCRICAO_CARGO, DATA_INGRESSO_ORGAO, ORGSUP_EXERCICIO, DATA_DIPLOMA_INGRESSO_SERVICOPUBLICO, UF_EXERCICIO)
 
@@ -152,7 +152,7 @@ summary(subset_salarios$REMUNERACAO_REAIS)
 #' Diferença entre o Terceiro Quartil e o Primeiro Quartil. Também conhecido pela sigla IQR.
 #' 
 ## ------------------------------------------------------------------------
-IQR(subset_salarios$REMUNERACAO_REAIS)
+(iqr_remuneracao <- IQR(subset_salarios$REMUNERACAO_REAIS))
 
 #' 
 #' Em datasets com dados distribuidos simetricamente em torno da mediana, o IQR corresponderá ao dobro do Desvio Absoluto da Mediana.
@@ -167,6 +167,12 @@ IQR(subset_salarios$REMUNERACAO_REAIS)
 print("Atividade")
 
 ## Código aqui
+
+(dam_salario <- median( abs( subset_salarios$REMUNERACAO_REAIS - median( subset_salarios$REMUNERACAO_REAIS ))))
+(md_salario <- median( subset_salarios$REMUNERACAO_REAIS ))
+(abs_dev <- dam_salario / md_salario)
+(raz_iqr_desv <- iqr_remuneracao / abs_dev)
+
 
 #' 
 #' __Atividade II__

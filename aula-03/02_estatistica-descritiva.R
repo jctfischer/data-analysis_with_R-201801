@@ -236,6 +236,40 @@ print("Atividade")
 
 ## Código aqui
 
+subset_salarios %>%
+  group_by(UF_EXERCICIO) %>%
+  summarise( vlrmedia = mean(REMUNERACAO_REAIS)
+           , servidores = n()
+           , vlrmediana = median(REMUNERACAO_REAIS) 
+           , media_maior = vlrmedia > vlrmediana )  %>%
+  ungroup() %>%
+  arrange(desc(media_maior))
+
+subset_salarios %>%
+  group_by(UF_EXERCICIO) %>%
+  summarise( vlrmedia = mean(REMUNERACAO_REAIS)
+             , servidores = n()
+             , vlrmediana = median(REMUNERACAO_REAIS) 
+             , media_maior = vlrmedia > vlrmediana )  %>%
+  ungroup() %>%
+  group_by(media_maior)%>%
+  summarise(total = n())%>%
+  ungroup()
+
+(subset_salarios %>%
+  group_by(UF_EXERCICIO) %>%
+  summarise( vlrmedia = mean(REMUNERACAO_REAIS)
+             , servidores = n()
+             , vlrmediana = median(REMUNERACAO_REAIS) 
+             , media_maior = vlrmedia > vlrmediana 
+            )  %>%
+  ungroup() %>%
+  group_by(media_maior)%>%
+  count(total = n()) -> subset_media_maior )
+  
+
+
+
 #' 
 #' __Atividade II__
 #' 
@@ -320,7 +354,9 @@ subset_salarios %>%
 #' 
 #' __Atividade I__
 #' 
-#' A [Inequalidade de Chebyshev](https://en.wikipedia.org/wiki/Standard_deviation#Chebyshev's_inequality) afirma que, para distribuições de probabilidade onde o Desvio Padrão é definido, 2 Desvios Padrão da média devem absorver pelo menos 75% do tamanho da amostra.
+#' A [Inequalidade de Chebyshev](https://en.wikipedia.org/wiki/Standard_deviation#Chebyshev's_inequality) 
+#' afirma que, para distribuições de probabilidade onde o Desvio Padrão é definido, 
+#' 2 Desvios Padrão da média devem absorver pelo menos 75% do tamanho da amostra.
 #' 
 #' Verifique a validade deste teorema com os valores calculados.
 #' 
@@ -329,16 +365,52 @@ print("Atividade")
 
 ## Código aqui
 
+dois_desvios <- 2 * sd( subset_salarios$REMUNERACAO_REAIS ) 
+
+media <- mean(subset_salarios$REMUNERACAO_REAIS)
+
+dois_desvios_media <- media + dois_desvios
+
+subset_salarios %>%
+    filter( REMUNERACAO_REAIS <= dois_desvios_media) %>%
+  nrow() -> total_dentro_dois_desvios 
+
+  total_dentro_dois_desvios  / nrow(subset_salarios)
+
+   
+  
 #' 
 #' __Atividade II__
 #' 
-#' No dataset de salários temos os diferentes cargos ocupados pelos servidores públicos federais. Liste os 10 cargos de __menor coeficiente de variação__ cujo cargo tenha mais que 100 servidores públicos. A lista deve conter, além do cargo e Coeficiente de Variação, a quantidade de servidores, o menor salário, o maior salário, o salário médio e o desvio padrão.
+#' No dataset de salários temos os diferentes cargos ocupados pelos servidores públicos federais. 
+#' Liste os 10 cargos de __menor coeficiente de variação__ cujo cargo tenha mais que 100 servidores públicos. 
+#' A lista deve conter, além do cargo e Coeficiente de Variação, a quantidade de servidores, o menor salário, o maior salário, o salário médio e o desvio padrão.
 #' 
 ## ------------------------------------------------------------------------
 print("Atividade")
 
 ## Código aqui
 
+  subset_salarios %>%
+    count(DESCRICAO_CARGO)%>%
+    filter(n>100 ) -> cargos_mais_cem
+
+  subset_salarios %>%
+    filter(DESCRICAO_CARGO %in% cargos_mais_cem$DESCRICAO_CARGO)
+  subset_salarios %>%
+    group_by(DESCRICAO_CARGO)%>%
+    filter(n()>100)%>%
+    summarise(desvio_padrao = sd(REMUNERACAO_REAIS)
+             , media = mean(REMUNERACAO_REAIS)
+             , cv = desvio_padrao/media
+             ,qtde_servidores = n()
+             , menor_sal = min(REMUNERACAO_REAIS)
+             , maior_sal = max(REMUNERACAO_REAIS))%>%
+    ungroup()%>%
+  arrange(cv)%>%
+    head(10)
+  
+     
 #' 
 #' __Atividade III__
 #' 
@@ -349,6 +421,22 @@ print("Atividade")
 
 ## Código aqui
 
+  subset_salarios %>%
+    filter(DESCRICAO_CARGO %in% cargos_mais_cem$DESCRICAO_CARGO)
+  subset_salarios %>%
+    group_by(DESCRICAO_CARGO)%>%
+    filter(n()>100)%>%
+    summarise(desvio_padrao = sd(REMUNERACAO_REAIS)
+              , media = mean(REMUNERACAO_REAIS)
+              , cv = desvio_padrao/media
+              ,qtde_servidores = n()
+              , menor_sal = min(REMUNERACAO_REAIS)
+              , maior_sal = max(REMUNERACAO_REAIS))%>%
+    ungroup()%>%
+    arrange(desc(cv))%>%
+    head(10)
+  
+  
 #' 
 #' ![](https://mathwithbaddrawings.files.wordpress.com/2016/07/20160712085402_00021.jpg)
 #' ![](https://mathwithbaddrawings.files.wordpress.com/2016/07/20160712085402_00022.jpg)

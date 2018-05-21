@@ -3,7 +3,7 @@
 ## Vamos começar carregando o arquivo de dados preparado para esta aula
 library(tidyverse)
 
-salarios <- read_csv("aula-03/data/201802_dados_salarios_servidores.csv.gz")
+salarios <- read_csv("data-analysis_with_R-201801-master/aula-03/data/201802_dados_salarios_servidores.csv.gz")
 
 ### 1 ####
 ## 
@@ -14,8 +14,14 @@ salarios <- read_csv("aula-03/data/201802_dados_salarios_servidores.csv.gz")
 ## 
 ### # ####
 
+vl_dolar <- 3.2421
 
-### 2 ####
+salarios %>%
+  mutate(remun_total  = REMUNERACAO_REAIS + (REMUNERACAO_DOLARES * vl_dolar)) -> subset_salarios
+
+subset_salarios %>% select(REMUNERACAO_REAIS, REMUNERACAO_DOLARES, remun_total) 
+
+### 2 ###
 ## 
 ## Neste dataset é possível identificar que alguns servidores estão lotados em órgãos diferentes do seu órgão de exercício.
 ## Identifique os 5 cargos com maior quantidade de servidores que estão lotados em um órgão diferente, listando a descrição do cargo e a quantidade de servidores por cargo.
@@ -25,7 +31,13 @@ salarios <- read_csv("aula-03/data/201802_dados_salarios_servidores.csv.gz")
 salarios %>% count(UF_EXERCICIO) %>% pull(UF_EXERCICIO) -> ufs # EXEMPLO
 ## 
 ### # ####
-
+salarios %>% filter(ORGSUP_LOTACAO != ORGSUP_EXERCICIO, !is.na(DESCRICAO_CARGO))  %>% 
+  group_by(DESCRICAO_CARGO) %>%
+  summarise(servidores = n()) %>%
+  ungroup() %>%
+  arrange(desc(servidores)) %>%
+  head(5)%>%
+  pull(DESCRICAO_CARGO) -> cargos_diferente_lotacao
 
 ### 3 ####
 ## 
@@ -47,5 +59,16 @@ salarios %>% filter(DESCRICAO_CARGO %in% c("MINISTRO DE PRIMEIRA CLASSE", "ANALI
 ## Dica 2: Será necessário agrupar (group_by) por mais de uma variável para calcular as estatísticas solicitadas. 
 ## A função group_by permite múltiplos nomes de variáveis na mesma chamada.
 ## 
+salarios %>% filter(DESCRICAO_CARGO %in% cargos_diferente_lotacao) %>% 
+             mutate(lotacao_igual = if_else( ORGSUP_LOTACAO == ORGSUP_EXERCICIO, "IGUAL", "DIFER"))%>%
+             group_by(DESCRICAO_CARGO, lotacao_igual) %>%
+             summarise(media_salarial = mean(REMUNERACAO_REAIS), 
+                       desvio_padrao = sd(REMUNERACAO_REAIS), 
+                       vlrmediana = median(REMUNERACAO_REAIS),
+                       dam_salario = median(abs(REMUNERACAO_REAIS - median(REMUNERACAO_REAIS ))),
+                       menor_salario = min(REMUNERACAO_REAIS),
+                       maior_salario = max(REMUNERACAO_REAIS),
+                       servidores = n()) %>%
+               ungroup()%>%
+               arrange(desc(DESCRICAO_CARGO)) -> subset_cinco_cargos
 ### # ####
-

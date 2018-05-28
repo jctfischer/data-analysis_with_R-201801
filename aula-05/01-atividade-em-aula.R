@@ -1,18 +1,18 @@
-# Carregue a biblioteca tidyverse. Lembre que outras bibliotecas serão carregadas junto ao tidyverse
+# Carregue a biblioteca tidyverse. Lembre que outras bibliotecas serÃ£o carregadas junto ao tidyverse
 
 library(tidyverse)
 library(lubridate)
+library(stringr)
 
+# Crie um dataframe com o conteÃºdo do arquivo ted_main.csv.gz. 
 
-# Crie um dataframe com o conteúdo do arquivo ted_main.csv.gz. 
-
-ted_main <- read_csv("C:/Users/alu201830198/data-analysis_with_R-201801/aula-05/data/ted_main.csv.gz")
+ted_main <- read_csv("C:/Users/PC/Documents/data-analysis_with_R-201801-master/aula-05/data/ted_main.csv.gz")
 
 
 # Visualize o resumo dos dados do dataframe. 
 summary(ted_main)
 
-# Verifique os m�?nimos, máximos, médias e medianas das variáveis numéricas.
+# Verifique os mÃ?nimos, mÃ¡ximos, mÃ©dias e medianas das variÃ¡veis numÃ©ricas.
 
 min(ted_main$comments) 
 max(ted_main$comments) 
@@ -54,13 +54,13 @@ max(ted_main$views)
 mean(ted_main$views) 
 median(ted_main$views) 
 
-# As variáveis duration, film_date e published_date estão no tipo de dados apropriado?
-# N�o est�o com tipo de dados aprpopriados
+# As variÃ¡veis duration, film_date e published_date estÃ£o no tipo de dados apropriado?
+# Não estão com tipo de dados aprpopriados
 
-# Converta as seguintes variáveis utilizando o pacote Lubridate:
-#     * duration, para duração (em segundos). Experimente utilizar as funções as.duration e duration. Mantenha aquela que considerar mais apropriada.
-#     * film_date, para data, com a função as_datetime.
-#     * published_date, para data, com a função as_datetime..
+# Converta as seguintes variÃ¡veis utilizando o pacote Lubridate:
+#     * duration, para duraÃ§Ã£o (em segundos). Experimente utilizar as funÃ§Ãµes as.duration e duration. Mantenha aquela que considerar mais apropriada.
+#     * film_date, para data, com a funÃ§Ã£o as_datetime.
+#     * published_date, para data, com a funÃ§Ã£o as_datetime..
 
 ted_main %>%
   mutate(duracao =duration(duration)) %>%
@@ -68,7 +68,7 @@ ted_main %>%
   mutate(data_public = as_datetime(published_date))->subset_tedmain_datas
 
 
-# Converta as seguintes variáveis character para variáveis categóricas com a função factor.
+# Converta as seguintes variÃ¡veis character para variÃ¡veis categÃ³ricas com a funÃ§Ã£o factor.
 #     * event
 #     * speaker_occupation
 
@@ -78,11 +78,11 @@ subset_tedmain_datas %>%
 summary(subset_tedmain_fact)
 
 
-# Retire do dataframe a variável name
+# Retire do dataframe a variÃ¡vel name
   subset(subset_tedmain_fact, select = -name)  ->subset_tedmain_noname
 
 
-# Visualize novamente o resumo dos dados do dataframe. Verifique os m�?nimos, máximos, médias e medianas das variáveis numéricas. Verifique as contagens das variáveis categóricas
+# Visualize novamente o resumo dos dados do dataframe. Verifique os mÃ?nimos, mÃ¡ximos, mÃ©dias e medianas das variÃ¡veis numÃ©ricas. Verifique as contagens das variÃ¡veis categÃ³ricas
 
 summary(subset_tedmain_noname)
 
@@ -103,7 +103,7 @@ median(subset_tedmain_noname$data_public)
 
 
 
-# Verifique quais registros possuem a menor quantidade de l�?nguas. Corrija para que possuam no m�?nimo 1 idioma.
+# Verifique quais registros possuem a menor quantidade de lÃ?nguas. Corrija para que possuam no mÃ?nimo 1 idioma.
 subset_tedmain_noname %>% arrange(languages)
 
 subset_tedmain_noname %>% mutate(linguagens = if_else( languages == 0, 1L, languages ))-> subset_tedmain_minlang 
@@ -115,93 +115,164 @@ subset_tedmain_minlang %>% arrange(data_film)%>%select(data_film)%>%head(15)
 
 
 
-# Crie um dataframe com a contagem de apresentações por ano de filmagem e visualize todo o seu conteúdo
+# Crie um dataframe com a contagem de apresentaÃ§Ãµes por ano de filmagem e visualize todo o seu conteÃºdo
 subset_tedmain_minlang %>% 
   group_by(year(data_film))%>%
   count() -> subset_tedmain_pres_year
 subset_tedmain_pres_year
 
-# Analise os 10 quantis da quantidade de apresentações por ano.
-# Descarte, do data frame de apresentações do TED Talks, aqueles cujo ano de filmagem tiver quantidade de apresentações menor ou igual à quantidade do quarto quantil.
-
+# Analise os 10 quantis da quantidade de apresentaÃ§Ãµes por ano.
 quantile(subset_tedmain_pres_year$n, c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90 ))
+
+# Descarte, do data frame de apresentaÃ§Ãµes do TED Talks, aqueles cujo ano de filmagem 
+# tiver quantidade de apresentaÃ§Ãµes menor ou igual a quantidade do quarto quantil.
+
+subset_tedmain_pres_year%>%
+  filter(n > quantile(subset_tedmain_pres_year$n, c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90 ))[4][1])%>%
+  pull(`year(data_film)`) -> anos
+
+ted_main %>%
+  filter( year(film_date) %in% anos )
+  
 
 
 # Verifique novamente o resumo dos dados do dataframe
+summary(subset_tedmain_pres_year)
+
+
+# Verifique os 10 registros com maior duraÃ§Ã£o.
+subset_tedmain_datas %>%
+  arrange(desc(duracao))%>%
+  head(10)
+  
+
+
+# Existem apresentaÃ§Ãµes com duraÃ§Ã£o maior que 3 desvios padrÃ£o acima da mÃ©dia? Liste elas
+
+ted_main %>%
+  filter(duration > (3*sd(duration))) %>%
+  select( duration, event, film_date, main_speaker)
+
+
+# Calcule os 4 quartis e o IQR da duraÃ§Ã£o das apresentaÃ§Ãµes. Liste as apresentaÃ§Ãµes cuja duraÃ§Ã£o supera 1.5 * o IQR + o terceiro quartil
+quantile(ted_main$duration)
+
+
+# Visualize os 10 quantis da quantidade de visualizaÃ§Ãµes
+quantile(ted_main$views, c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90 ))
+
+
+# Compare as seguintes estatÃ?sticas descritivas da quantidade de visualizaÃ§Ãµes:
+#   * MÃ©dia e Mediana. Qual Ã© maior?
+#   * Desvio Absoluto da Mediana e Desvio PadrÃ£o. Qual Ã© maior?
+#   * Desvio Absoluto da Mediana e IQR. Quantas vezes o IQR Ã© maior que o Desvio Absoluto da Mediana?
+#   * Com base na mÃ©dia e na mediana, e na razÃ£o entre o IQR e o Desvio Absoluto da Mediana, 
+#     vocÃª conclui que as quantidades de visualizaÃ§Ã£o estÃ£o distribuidas de forma simÃ©trica em torno da mÃ©dia?
+
+mean(ted_main$views)
+median(ted_main$views)
+# a media eh maior
+
+(dam_visual <- median( abs( ted_main$views - median( ted_main$views ))))
+sd(ted_main$views)
+# o Desvio Absoluto da Mediana eh maior
+
+quantile(ted_main$views)
+IQR <- c(quantile(ted_main$views))[3] - c(quantile(ted_main$views))[1]
+IQR/dam_visual
+
+# Calcule a mÃ©dia, o desvio padrÃ£o, a mediana e o IQR da quantidade de lÃ?nguas dos seguintes grupos:
+#     * 10% de vÃ?deos com maior nÃºmero de visualizaÃ§Ãµes
+#     * 10% de vÃ?deos com menor nÃºmero de visualizaÃ§Ãµes
+
+ted_main%>%
+  arrange(desc(languages))%>%
+  select(languages)%>%
+  head(10) -> dez_maior_visual  
+
+mean(dez_maior_visual$languages)
+median(dez_maior_visual$languages)
+(dam_visual <- median( abs( dez_maior_visual$languages - median( dez_maior_visual$languages ))))
+sd(dez_maior_visual$languages)
+IQR <- c(quantile(dez_maior_visual$languages))[3] - c(quantile(dez_maior_visual$languages))[1]
+
+ted_main %>%
+  arrange(desclanguages) %>%
+  select(languages)%>%
+  head(10) -> dez_menor_visual  
+
+mean(dez_menor_visual$languages)
+median(dez_menor_visual$languages)
+(dam_visual <- median( abs( dez_menor_visual$languages - median( dez_menor_visual$languages ))))
+sd(dez_maior_visual$languages)
+IQR <- c(quantile(dez_menor_visual$languages))[3] - c(quantile(dez_menor_visual$languages))[1]
+
+
+# Determine a quantidade de apresentaÃ§Ãµes por evento cujo nome inicie com TED. Utilize a funÃ§Ã£o str_detect para este filtro
+
+ted_main %>%
+  filter( str_detect(ted_main$name, pattern = "TED"))%>%
+  select(name, event) %>% head(10)
+
+ted_main %>%
+  filter(str_detect(ted_main$name, pattern = "TED"))%>%
+  group_by(event)%>%
+  summarise( qtde_apres = n())%>%
+  ungroup()%>%
+  arrange(desc(qtde_apres))%>%
+  head(20)
+
+
+
+# Determine, por evento cujo nome inicie com TED e que a quantidade de visualizaÃ§Ãµes dos vÃ?deos foi maior que a mediana calculada anteriormente.
+#   * a quantidade de apresentaÃ§Ãµes resultante do filtro, por evento
+#   * o ano do evento (utilizar o menor ano da data de publicaÃ§Ã£o)
+#   * a quantidade mÃ©dia de lÃ?nguas das apresentaÃ§Ãµes
+#   * o desvio padrÃ£o da quantidade de lÃ?nguas
+#   * o coeficiente de variaÃ§Ã£o da quantidade de lÃ?nguas
+### EXIBA SOMENTE OS EVENTOS COM MAIS DE 10 APRESENTAÃÃES
 
 
 
 
-# Verifique os 10 registros com maior duração.
+# Calcule e classifique as seguintes correlaÃ§Ãµes
+#     * Quantidade de visualizaÃ§Ãµes e Quantidade de lÃ?nguas
+#     * Quantidade de visualizaÃ§Ãµes e DuraÃ§Ã£o
+#     * Quantidade de visualizaÃ§Ãµes e Quantidade de ComentÃ¡rios
+#     * Quantidade de ComentÃ¡rios e Quantidade de lÃ?nguas
+
+library(ggcorrplot)
+
+corr <-
+  ted_main %>% 
+  select_if(is_numeric) %>%
+  mutate( views = as.numeric(views)
+          , languages = as.numeric(languages)) %>%
+  select(views, languages) %>%
+  cor() %>% 
+  round(2)
+
+ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE)
+
+
+corr <-
+  ted_main %>% 
+  select_if(is_numeric) %>%
+  mutate( views = as.numeric(views)
+          , duration = as.numeric(duration)) %>%
+  select(views, duration) %>%
+  cor() %>% 
+  round(2)
+
+ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE)
+
+
+# Descarte os vÃ?deos cuja duraÃ§Ã£o seja maior que 3 desvios padrÃµes da mÃ©dia. Calcule novamente as 5 correlaÃ§Ãµes solicitadas
 
 
 
 
-# Existem apresentações com duração maior que 3 desvios padrão acima da média? Liste elas
-
-
-
-
-# Calcule os 4 quartis e o IQR da duração das apresentações. Liste as apresentações cuja duração supera 1.5 * o IQR + o terceiro quartil
-
-
-
-
-# Visualize os 10 quantis da quantidade de visualizações
-
-
-
-
-# Compare as seguintes estat�?sticas descritivas da quantidade de visualizações:
-#   * Média e Mediana. Qual é maior?
-#   * Desvio Absoluto da Mediana e Desvio Padrão. Qual é maior?
-#   * Desvio Absoluto da Mediana e IQR. Quantas vezes o IQR é maior que o Desvio Absoluto da Mediana?
-#   * Com base na média e na mediana, e na razão entre o IQR e o Desvio Absoluto da Mediana, 
-#     você conclui que as quantidades de visualização estão distribuidas de forma simétrica em torno da média?
-
-
-
-
-# Calcule a média, o desvio padrão, a mediana e o IQR da quantidade de l�?nguas dos seguintes grupos:
-#     * 10% de v�?deos com maior número de visualizações
-#     * 10% de v�?deos com menor número de visualizações
-
-
-
-
-# Determine a quantidade de apresentações por evento cujo nome inicie com TED. Utilize a função str_detect para este filtro
-
-
-
-
-# Determine, por evento cujo nome inicie com TED e que a quantidade de visualizações dos v�?deos foi maior que a mediana calculada anteriormente.
-#   * a quantidade de apresentações resultante do filtro, por evento
-#   * o ano do evento (utilizar o menor ano da data de publicação)
-#   * a quantidade média de l�?nguas das apresentações
-#   * o desvio padrão da quantidade de l�?nguas
-#   * o coeficiente de variação da quantidade de l�?nguas
-### EXIBA SOMENTE OS EVENTOS COM MAIS DE 10 APRESENTAÇÕES
-
-
-
-
-# Calcule e classifique as seguintes correlações
-#     * Quantidade de visualizações e Quantidade de l�?nguas
-#     * Quantidade de visualizações e Duração
-#     * Quantidade de visualizações e Quantidade de Comentários
-#     * Quantidade de Comentários e Quantidade de l�?nguas
-
-
-
-
-# Descarte os v�?deos cuja duração seja maior que 3 desvios padrões da média. Calcule novamente as 5 correlações solicitadas
-
-
-
-
-# Utilizando o data frame original, crie um dataframe com a mediana da duração dos v�?deos por ano de filmagem. Calcule a correlação entre o ano e a mediana da duração
+# Utilizando o data frame original, crie um dataframe com a mediana da duraÃ§Ã£o dos vÃ?deos por ano de filmagem. Calcule a correlaÃ§Ã£o entre o ano e a mediana da duraÃ§Ã£o
 # e interprete o resultado
-
-
 
 

@@ -131,11 +131,8 @@ subset_tedmain_pres_year%>%
   filter(n > quantile(subset_tedmain_pres_year$n, c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90 ))[4][1])%>%
   pull(`year(data_film)`) -> anos
 
-ted_main %>%
-  filter( year(film_date) %in% anos )
+subset_tedmain_pres_year %>% filter( year(data_film) %in% anos )
   
-
-
 # Verifique novamente o resumo dos dados do dataframe
 summary(subset_tedmain_pres_year)
 
@@ -276,3 +273,239 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE)
 # e interprete o resultado
 
 
+
+# bibliotecas utilizadas
+if (!"Hmisc" %in% installed.packages()) install.packages("Hmisc")
+if (!"ggcorrplot" %in% installed.packages()) install.packages("ggcorrplot")
+
+library(magrittr)
+library(Hmisc)
+
+ted_main %>%
+  mutate(duracao =duration(duration)) %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages )) +
+  geom_point( alpha = .3 ) +
+  scale_x_continuous( breaks = seq( from = 1970, to = 2020, by = 5 )) +
+  theme_bw()
+
+
+ted_talks_recentes <- ted_main %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  filter(data_film >= ymd(20050101)) %>%
+  mutate(languages = if_else(languages == 0, 1L, languages))
+
+
+ted_talks_recentes %>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages )) +
+  geom_point( alpha = .3 ) +
+  scale_x_continuous( breaks = 2005:2017) +
+  labs( x = "Ano de filmagem"
+      , y = "Quantidade de Línguas"
+      , title = "Evolução da Quantidade de Línguas por vídeo ao longo dos anos"
+      , subtitle = "Período considerado somente a partir de 2005. Dados ajustados para mínimo de 1 língua por apresentação."
+      , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+ted_talks_recentes %>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages )) +
+  stat_summary(fun.data = mean_sdl) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq(from = -10, to = 60, by = 5 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Quantidade de Línguas"
+        , title = "Evolução da Quantidade de Línguas por vídeo ao longo dos anos"
+        , subtitle = "Período considerado somente a partir de 2005. Dados ajustados para mínimo de 1 língua por apresentação."
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+# ATIVIDADE
+# Repetir os gráficos de pontos e de sumário utilizando o ano de publicação no eixo x e a duração no eixo y.
+
+
+ted_main %>%
+  mutate(duracao =as.numeric(duration)) %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( year = year( data_public )) %>%
+  ggplot( aes( x = year, y = duracao )) +
+  geom_point( alpha = .3 ) +
+  scale_x_continuous( breaks = seq( from = 2000, to = 2020, by = 1 )) +
+  theme_bw()
+
+#select(duracao,data_film,data_public,year)
+
+ted_main %>%
+  mutate(duracao =as.numeric(duration)) %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( year = year( data_public )) %>%
+  ggplot( aes( x = year, y = duracao )) +
+  geom_point( alpha = .3 ) +
+  scale_x_continuous( breaks = 2000:2020) +
+  labs( x = "Ano de publicacao"
+        , y = "Duracao em segundos"
+        , title = "Evolução da Duracao por vídeo ao longo dos anos"
+        , subtitle = "Período considerado somente a partir de 2000."
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+ted_main %>%
+  mutate(duracao =as.numeric(duration)) %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( year = year( data_public )) %>%
+  ggplot( aes( x = year, y = duracao )) +
+  stat_summary(fun.data = mean_sdl) +
+  scale_x_continuous( breaks = 2000:2020) +
+  scale_y_continuous( breaks = seq(from = 0, to = 3000, by = 500 )) +
+  labs( x = "Ano de publicacao"
+        , y = "Duracao em segundos"
+        , title = "Evolução da Duracao por vídeo ao longo dos anos"
+        , subtitle = "Período considerado somente a partir de 2000."
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+
+
+#Gráficos de barras
+
+ted_talks_recentes %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate( year = year( data_film )) %>%
+  group_by(year) %>%
+  summarise(sum_views = sum(views)) %>%
+  ungroup() %>%
+  ggplot( aes( x = year, y = sum_views )) +
+  geom_col(fill="blue", alpha=0.6) +
+  scale_x_continuous(breaks = 2005:2017) +
+  scale_y_continuous(labels = scales::format_format(big.mark = ".", decimal.mark=",", scientific = FALSE)) +
+  labs( x = "Ano de filmagem"
+        , y = "Total de visualizações de apresentações"
+        , title = "Exemplo com geom_col"
+        , subtitle = "Exibição do total de visualizações de apresentações de um mesmo ano de filmagem") +
+  theme_bw()
+
+ggplot(ted_talks_recentes, aes( x = year( data_film ))) +
+  geom_bar( fill="blue", color = "blue", alpha=0.6 ) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq( from = 50, to = 300, by = 50 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Total de apresentações publicadas"
+        , title = "Exemplo com geom_bar" ) +
+  theme_bw()
+
+ted_talks_recentes %>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( ano = year( data_public ), mes = month( data_public, label = TRUE )) %>%
+  ggplot(aes( x = ano, fill = mes )) +
+  geom_bar( alpha=0.6, color="black" ) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq( from = 50, to = 300, by = 50 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Total de apresentações"
+        , fill = "Mês do ano"
+        , title = "Publicações por mês em cada ano" ) +
+  theme_bw()
+
+
+ted_talks_recentes %>%
+  mutate(data_public = as_datetime(published_date))%>%
+  mutate( ano = year( data_public ), mes = month( data_public, label = TRUE )) %>%
+  ggplot(aes( x = ano )) +
+  geom_bar( alpha=0.6 ) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  facet_wrap (~ mes, ncol = 3 ) +
+  labs( x = "Ano de filmagem"
+        , y = "Total de apresentações"
+        , fill = "Mês do ano"
+        , title = "Publicações por mês em cada ano" ) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ted_talks_recentes %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages, group = year )) +
+  geom_boxplot() +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq(from = 0, to = 100, by = 5 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Quantidade de Línguas"
+        , title = "Evolução da Quantidade de Línguas por vídeo ao longo dos anos"
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+ted_talks_recentes %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages, group = year )) +
+  geom_jitter(alpha = .2, height = 0, width = 0.3) +
+  geom_boxplot(outlier.color = "red", outlier.alpha = 0.8, alpha = 0.2) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq(from = 0, to = 100, by = 5 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Quantidade de Línguas"
+        , title = "Evolução da Quantidade de Línguas por vídeo ao longo dos anos"
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+
+ted_talks_recentes %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate( year = year( data_film )) %>%
+  ggplot( aes( x = year, y = languages )) +
+  geom_jitter(alpha = .2, height = 0, width = 0.3) +
+  stat_summary(fun.data = mean_sdl, color="red") +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq(from = -10, to = 80, by = 5 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Quantidade de Línguas"
+        , title = "Evolução da Quantidade de Línguas por vídeo ao longo dos anos"
+        , subtitle = "Período considerado somente a partir de 2005. Dados ajustados para mínimo de 1 língua por apresentação.\n O ponto é a média no ano e a barra vertical representa o intervalo de 2 desvios acima e abaixo da média."
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+ted_talks_recentes %>%
+  mutate(data_film = as_datetime(film_date))%>%
+  mutate( year = year( data_film )) %>%
+  group_by(year) %>%
+  mutate(low = mean(languages) - 2 * sd(languages), hi = mean(languages) + 2 * sd(languages)) %>%
+  ungroup() %>%
+  ggplot( aes( x = year, y = languages, ymin = low, ymax = hi )) +
+  geom_ribbon(fill = "lightgray", alpha = 0.5) +
+  geom_jitter(alpha = .2, height = 0, width = 0.5) +
+  scale_x_continuous( breaks = 2005:2017 ) +
+  scale_y_continuous( breaks = seq(from = -10, to = 80, by = 5 )) +
+  labs( x = "Ano de filmagem"
+        , y = "Quantidade de Línguas"
+        , title = "Evolução da quantidade de línguas por vídeo ao longo dos anos"
+        , subtitle = "Período considerado somente a partir de 2005. Dados ajustados para mínimo de 1 língua por apresentação.\n A faixa cinza correponde ao intervalo de 2 desvios padrão acima e abaixo da média, calculados ano a ano."
+        , caption = "Dados de TED Talks de https://www.kaggle.com/rounakbanik/ted-talks/data") +
+  theme_bw()
+
+library(ggcorrplot)
+
+corr <-
+  ted_talks_recentes %>%
+  select_if(is_numeric) %>%
+  mutate( duration = as.numeric(duration)
+          , published_date = as.numeric(published_date)
+          , film_date = as.numeric(film_date)) %>%
+  select(languages,views,comments,duration,num_speaker,film_date,published_date) %>%
+  cor() %>% round(2)
+
+ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE)
+
+
+
+# geom_histogram

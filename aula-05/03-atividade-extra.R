@@ -8,7 +8,7 @@ library(Hmisc)
 
 # Crie um dataframe com o conteúdo do arquivo ted_main.csv.gz. 
 
-ted_main <- read_csv("C:/Users/PC/Documents/data-analysis_with_R-201801-master/aula-05/data/ted_main.csv.gz")
+ted_main <- read_csv("C:/Users/alu201830198/data-analysis_with_R-201801/aula-05/data/ted_main.csv.gz")
 
 # Visualize o resumo dos dados do dataframe. 
 summary(ted_main)

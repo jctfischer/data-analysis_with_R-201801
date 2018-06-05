@@ -6,7 +6,7 @@ library(stringr)
 
 # Crie um dataframe com o conteÃºdo do arquivo ted_main.csv.gz. 
 
-ted_main <- read_csv("C:/Users/PC/Documents/data-analysis_with_R-201801-master/aula-05/data/ted_main.csv.gz")
+ted_main <- read_csv("C:/Users/alu201830198/data-analysis_with_R-201801/aula-05/data/ted_main.csv.gz")
 
 
 # Visualize o resumo dos dados do dataframe. 
@@ -299,7 +299,7 @@ ted_talks_recentes <- ted_main %>%
 
 
 ted_talks_recentes %>%
-  mutate( year = year( data_film )) %>%
+  mutate( year = year( film_date )) %>%
   ggplot( aes( x = year, y = languages )) +
   geom_point( alpha = .3 ) +
   scale_x_continuous( breaks = 2005:2017) +

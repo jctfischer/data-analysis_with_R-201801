@@ -7,6 +7,15 @@ library(lubridate)
 
 ### IMPORTANTE ###
 ## Se você utilizar alguma função própria ou do material de aula, o código da(s) função(ões) deve estar neste arquivo da atividade.
+salarios <- read_csv("aula-03/data/201802_dados_salarios_servidores.csv.gz")
+
+vl_dolar <- 3.2421
+
+salarios %>%
+  mutate(remun_total  = REMUNERACAO_REAIS + (REMUNERACAO_DOLARES * vl_dolar)) -> subset_salarios
+
+subset_salarios %>% select(REMUNERACAO_REAIS, REMUNERACAO_DOLARES, remun_total) 
+
 
 
 ### 1 ####
@@ -18,6 +27,38 @@ library(lubridate)
 ##   o material visto em aula sobre interpretação do coeficiente.
 ## - O resultado desta atividade deve ser um Data Frame com as variáveis de Cargo, Coeficiente de Correlação, Direção da Correlação e Força da Correlação
 ## 
+
+subset_salarios %>% 
+  group_by(DESCRICAO_CARGO) %>%
+  summarise(servidores = n()) %>%
+  ungroup() %>%
+  arrange(desc(servidores)) %>%
+  filter(servidores > 200)  %>% 
+  pull(DESCRICAO_CARGO) -> cargos_mais_que200
+
+#' 
+#' ## Correlograma
+#' #' **ggcorrplot** possibilita visualizar as correlações entre variáveis numéricas. 
+#' A matriz de correlações deve ser previamente calculada utilizando a função `cor`.
+#' 
+## ------------------------------------------------------------------------
+library(ggcorrplot)
+
+corr <-  subset_salarios %>% 
+  mutate( tempo_orgao = year(Sys.Date()) - year(DATA_INGRESSO_ORGAO)
+          , tempo_diploma = year(Sys.Date()) - year(DATA_DIPLOMA_INGRESSO_SERVICOPUBLICO) )%>%
+  filter(DESCRICAO_CARGO %in% cargos_mais_que200) %>%
+  mutate(tempo_orgao = as.numeric(tempo_orgao)
+         , tempo_diploma = as.numeric(tempo_diploma) )%>%
+  select(DESCRICAO_CARGO, tempo_orgao, tempo_diploma) %>%
+  group_by(DESCRICAO_CARGO) %>%
+  select_if(is_numeric) %>%
+  cor() %>% round(2)
+
+# ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE)
+
+
+
 ### # ####
 
 ### 2 ###

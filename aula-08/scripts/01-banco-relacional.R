@@ -2,7 +2,7 @@
 # install.packages("RSQLite")
 
 # Banco de Dados Relacional e Colunar de propósito analítico, embutido
-# install.packages("MonetDBLite")
+ install.packages("MonetDBLite")
 
 # Biblioteca para objetos JSON
 # install.packages("jsonlite")
@@ -23,10 +23,18 @@ ted_main <- ted_talks %>%
 ted_ratings <- ted_talks %>%
   select( url, ratings ) %>%
   mutate( ratings = map( ratings, ~ jsonlite::fromJSON( str_replace_all( .x, "'", '"' )))) %>%
-  unnest( ratings ) %>%
+  unnest( ratings )
+
+ted_ratings %>%
+  select (id,name)%>%
+distinct()
+
+ted_ratings <- ted_ratings %>%
   select( -id ) %>%
   rename( category = name ) %>%
-  filter( count > 0 ) %>%
+  filter( count > 0 )
+
+ted_ratings <- ted_ratings %>%
   rename( count_ratings = count ) %>%
   group_by( url ) %>%
   mutate(rating_ratio = count_ratings / sum( count_ratings, na.rm = TRUE )) %>%
@@ -42,13 +50,16 @@ my_db <- MonetDBLite::src_monetdblite(dbdir)
 # Cria tabela temporária com ted_ratings
 tb_ted_ratings <- copy_to(my_db, df = ted_ratings, name = "ted_ratings_tmp", overwrite = TRUE, temporary = TRUE)
 
+summary(ted_ratings)
+summary(tb_ted_ratings)
+
 # Cria tabela temporária com ted_main
 tb_ted_main <- copy_to(my_db, df = ted_main, name = "ted_main_tmp", overwrite = TRUE, temporary = TRUE)
 
 # Para cada talk, determinar a categoria de rating mais comum (por ratio) e o total geral de tags que a talk recebeu
 tb_ted_ratings %>%
   group_by( url ) %>%
-  summarise( max_ratio = max( rating_ratio ), ratings = sum( count_ratings )) %>%
+  summarise( max_ratio = max( rating_ratio, na.rm = TRUE ), ratings = sum( count_ratings, na.rm = TRUE )) %>%
   ungroup() %>%
   inner_join( tb_ted_ratings, by=c("url", "max_ratio" = "rating_ratio" )) %>%
   select( url, category, ratings ) -> ted_defining_category
@@ -56,14 +67,18 @@ tb_ted_ratings %>%
 # Consulta em SQL
 show_query( ted_defining_category )
 
+ted_defining_category
+
+tally(ted_defining_category)
+
 tb_ted_main %>%
   inner_join( ted_defining_category, by = "url" ) -> tb_ted_main
 
 show_query( tb_ted_main )
 
 # Grava ted_main com novas colunas
-tb_ted_main    <- copy_to( my_db, tb_ted_main, name = "ted_main", overwrite = TRUE, temporary = FALSE )
-tb_ted_ratings <- copy_to( my_db, tb_ted_ratings, name = "ted_ratings", overwrite = TRUE, temporary = FALSE )
+tb_ted_main    <- copy_to( my_db, tb_ted_main, name = "ted_main_aula", overwrite = TRUE, temporary = FALSE )
+tb_ted_ratings <- copy_to( my_db, tb_ted_ratings, name = "ted_ratings_aula", overwrite = TRUE, temporary = FALSE )
 
 # Encerra conexão
 MonetDBLite::monetdblite_shutdown()
@@ -75,7 +90,7 @@ rm(my_db, tb_ted_main, tb_ted_ratings, ted_defining_category, ted_main, ted_rati
 dbdir <- "aula-08/data/monetdb/ted"
 my_db_new_conn <- MonetDBLite::src_monetdblite(dbdir)
 
-teds <- tbl( my_db_new_conn, "ted_main" )
+teds <- tbl( my_db_new_conn, "ted_main_aula" )
 
 head(teds, 10)
 

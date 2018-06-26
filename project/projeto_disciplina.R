@@ -9,21 +9,72 @@ products <- read_csv("project/products.csv")                         # Cadastro 
 insta_orders <- read_csv( "project/orders_instacart.csv" )           # Amostra de pedidos de usuários
 insta_products <- read_csv( "project/order_products_instacart.csv" ) # Produtos que compõe os pedidos
 
-
 #1 # Quantos dos produtos do cadastro nunca foram comprados?
+
+insta_products %>% 
+  group_by(product_id)%>%
+  count() -> subset_products_orders
+
+subset_products_orders%>%
+  pull(`product_id`) -> produtos_comprados
+
+products %>% 
+  filter( !product_id %in% produtos_comprados )%>%count()
 
 
 #2 # Crie um dataframe com os dados combinados de produtos, corredores e departamentos. 
+products %>%
+  inner_join( departments, by = "department_id" )%>%
+  inner_join( aisles, by = "aisle_id" )-> tb_product_dept_aisle
 
 
 #3 # Quais as 10 combinações corredor + departamento que possuem mais produtos cadastrados? Use o dataframe da atividade #2.
+tb_product_dept_aisle%>%
+  group_by(aisle_id, department_id)%>%
+  count()%>%ungroup()%>%
+  arrange(desc(n))%>%head(10)
+
+tb_product_dept_aisle%>%
+  group_by(aisle,department)%>%
+  count()%>%ungroup()%>%
+  arrange(desc(n))%>%head(10)
 
 
 #4 # Qual o percentual de pedidos que possuem algum produto dos pares 'corredor + departamento' da atividade anterior?
 
+tb_product_dept_aisle%>%
+  group_by(aisle_id, department_id)%>%
+  count()%>%ungroup()%>%
+  arrange(desc(n))%>%head(10)->dez_mais
+
+products %>%
+  inner_join( dez_mais, by = c("department_id","aisle_id") )-> tb_product_dez_mais
+
+insta_products %>%
+  inner_join( tb_product_dez_mais, by = "product_id")%>%
+group_by(product_id)%>%ungroup()%>%count()->qtd_dez_mais
+
+insta_products %>%count()->qtd_tot_pedidos
+
+print( qtd_dez_mais / qtd_tot_pedidos * 100 , digits = 3)
+
+
 
 #5 # Crie um novo dataframe de produtos em pedidos retirando aqueles produtos que não estão categorizados (usar resultado das atividades 3 e 4)
 
+tb_product_dept_aisle%>%
+  filter(department_id!=21,aisle_id!=100)->tb_prod_dept_aisle_sem_miss
+
+tb_prod_dept_aisle_sem_miss%>%
+  group_by(aisle_id,department_id)%>%
+  count()%>%ungroup()%>%
+  arrange(desc(n))%>%head(10)->dez_mais
+
+products %>%
+  inner_join( dez_mais, by = c("department_id","aisle_id") )-> tb_product_dez_mais
+
+insta_products %>%
+  inner_join( tb_product_dez_mais, by = "product_id")->insta_product_dez_menos
 
 #6 # Crie um dataframe que combine todos os dataframes através das suas chaves de ligação. Para produtos de pedidos, use o dataframe da atividade 4
    # Transforme as variáveis user_id, department e aisle em factor
@@ -31,6 +82,19 @@ insta_products <- read_csv( "project/order_products_instacart.csv" ) # Produtos 
 
    # Este dataframe deverá ser utilizado em todas as atividades seguintes
 
+insta_orders%>%
+  inner_join( insta_products, by = "order_id" )%>%
+  inner_join( products, by = "product_id") %>%
+  inner_join( departments, by = "department_id" )%>%
+  inner_join( aisles, by = "aisle_id" )-> tb_tudo
+
+tb_tudo%>%
+  mutate( user_id = factor(user_id)
+        , department = factor(department)
+        , aisle = factor(aisle))->tb_tudo
+tb_tudo%>%
+  mutate( order_hour_of_day = factor(order_hour_of_day, ordered = TRUE))->tb_tudo
+          
 
 #7 # Identifique os 5 horários com maior quantidade de usuários que fizeram pedidos
 
@@ -69,6 +133,7 @@ insta_products <- read_csv( "project/order_products_instacart.csv" ) # Produtos 
 
 #17 # O vetor abaixo lista todos os IDs de bananas maduras em seu estado natural.
     # Utilizando este vetor, identifique se existem pedidos com mais de um tipo de banana no mesmo pedido.
+bananas <- c(24852, 13176, 39276, 37067, 29259)
 
 
 #18 # Se existirem, pedidos resultantes da atividade 17, conte quantas vezes cada tipo de banana aparece nestes pedidos com mais de um tipo de banana.

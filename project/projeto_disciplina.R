@@ -122,7 +122,7 @@ top_products %>%
   ungroup() %>%
   group_by(product_id, product_name, order_hour_of_day) %>%
   summarise(media_qtd_hora = mean(qtd_hora)) %>%
-  ungroup()  %>% View() -> ordens_produto_hora 
+  ungroup() -> ordens_produto_hora 
 
 
 library(ggplot2)
@@ -137,7 +137,8 @@ ggplot(data = ordens_produto_hora,
     labs(x = 'Hora',
        y = 'Quant',
        title = 'Top 15 Produtos por Hora',
-       colour = 'Produtos')
+       colour = 'Produtos')+
+  theme_bw()
 
 
 #10 # Calcule as seguintes estatísticas descritivas sobre a quantidade de pedidos por dia, para cada hora do dia. O resultado final deve ser exibido para cada hora do dia:
@@ -177,6 +178,7 @@ tb_tudo %>%
   summarise(qtd_hora = n_distinct(order_id)) %>% 
   ggplot( aes( x = order_dow, y = qtd_hora, group = order_dow )) +
   geom_boxplot() +
+  scale_x_continuous( breaks = 0:6 ) +
   labs(x = 'Dia',
        y = 'Quantidade',
        title = 'Media Pedidos por Dia') +
@@ -201,7 +203,7 @@ ggplot( aes( x = tempo_medio, y = qtd_usuarios )) +
   geom_col(fill="blue", alpha=0.6) +
 labs(x = 'Tempo Medio',
      y = 'Quantidade Usuarios',
-     title = 'quantidade de usuários em cada tempo médio')
+     title = 'Quantidade de usuarios em cada tempo medio')
   
 #15 # Faça um gráfico de barras com a quantidade de usuários em cada número de dias desde o pedido anterior. Há alguma similaridade entre os gráficos das atividades 14 e 15? 
 
@@ -217,15 +219,56 @@ tb_tudo %>%
 
 
 #16 # Repita o gráfico da atividade 14 mantendo somente os usuários com no mínimo 5 pedidos. O padrão se mantém?
+insta_orders %>%
+  group_by(user_id) %>% 
+  summarise(qtd_pedidos = n_distinct(user_id)) %>% filter(qtd_pedidos>1)->qtd_ped_user
+  
+# cada usuario tem apenas 1 pedido !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#  summarise( tempo_medio = mean(days_since_prior_order)) %>%
+#  group_by(tempo_medio) %>%
+#  summarise(qtd_usuarios = n_distinct(user_id)) %>%
+#  ungroup()%>%
+#  ggplot( aes( x = tempo_medio, y = qtd_usuarios )) +
+#  geom_col(fill="blue", alpha=0.6) +
+#  labs(x = 'Tempo Medio',
+#       y = 'Quantidade Usuarios',
+#       title = 'quantidade de usuários em cada tempo médio')
 
 
 #17 # O vetor abaixo lista todos os IDs de bananas maduras em seu estado natural.
     # Utilizando este vetor, identifique se existem pedidos com mais de um tipo de banana no mesmo pedido.
 bananas <- c(24852, 13176, 39276, 37067, 29259)
-
+insta_products%>%
+  filter(product_id %in% bananas)%>%
+  group_by(order_id)%>%
+  summarise(qtde_banana = n_distinct(product_id)) %>%
+  ungroup()%>%
+  filter(qtde_banana>1)%>%
+  head(20)
 
 #18 # Se existirem, pedidos resultantes da atividade 17, conte quantas vezes cada tipo de banana aparece nestes pedidos com mais de um tipo de banana.
     # Após exibir os tipos de banana, crie um novo vetor de id de bananas contendo somente os 3 produtos de maior contagem de ocorrências
+tb_tudo%>%
+  filter(product_id %in% bananas)%>%
+  group_by(order_id)%>%
+  summarise(qtde_banana = n_distinct(product_id)) %>%
+  ungroup()%>%
+  filter(qtde_banana>1)%>%
+  pull(`order_id`) -> pedido_banana
+
+tb_tudo%>%
+  filter(product_id %in% bananas)%>%
+  filter(order_id %in% pedido_banana)%>%
+    group_by(product_id)%>%
+  summarise( cada_banana = n())%>%
+  arrange(desc(cada_banana))->mais_bananas
+
+mais_bananas
+
+mais_bananas %>% 
+pull(`product_id`)-> bananas
+bananas<-bananas[1:3]
 
 
 #19 # Com base no vetor criado na atividade 18, conte quantos pedidos de, em média, são feitos por hora em cada dia da semana. 

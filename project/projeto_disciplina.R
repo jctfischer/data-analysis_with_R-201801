@@ -271,16 +271,48 @@ pull(`product_id`)-> bananas
 bananas<-bananas[1:3]
 
 
-#19 # Com base no vetor criado na atividade 18, conte quantos pedidos de, em m√©dia, s√£o feitos por hora em cada dia da semana. 
+#19 # Com base no vetor criado na atividade 18, conte quantos pedidos de, em mÈdia, s„o feitos por hora em cada dia da semana. 
 
+insta_orders %>%
+  inner_join(insta_products, by = 'order_id') %>%
+  filter(product_id %in% bananas) %>%
+  group_by(order_dow, order_hour_of_day) %>%
+  summarise(count = n_distinct(order_id)) %>%
+  ungroup()
 
-#20 # Fa√ßa um gr√°fico dos pedidos de banana da atividade 19. O gr√°fico deve ter o dia da semana no eixo X, a hora do dia no eixo Y, 
-    # e pontos na intersec√ß√£o dos eixos, onde o tamanho do ponto √© determinado pela quantidade m√©dia de pedidos de banana 
-    # nesta combina√ß√£o de dia da semana com hora
+#20 # FaÁa um gr·fico dos pedidos de banana da atividade 19. O gr·fico deve ter o dia da semana no eixo X, a hora do dia no eixo Y, 
+# e pontos na intersecÁ„o dos eixos, onde o tamanho do ponto È determinado pela quantidade mÈdia de pedidos de banana 
+# nesta combinaÁ„o de dia da semana com hora
 
+insta_orders %>%
+  inner_join(insta_products, by = 'order_id') %>%
+  filter(product_id %in% bananas) %>%
+  group_by(order_dow, order_hour_of_day, order_id) %>%
+  ungroup() %>%
+  ggplot( aes( x = order_dow, y = order_hour_of_day)) +
+  geom_count() +
+  scale_x_continuous( breaks = seq(from = 0, to = 6, by = 1)) +
+  labs(x = 'Dias da Semana',
+       y = 'Hora do Dia',
+       size = 'Produtos') +
+  theme_bw()
 
-#21 # Fa√ßa um histograma da quantidade m√©dia calculada na atividade 19, facetado por dia da semana
+#21 # FaÁa um histograma da quantidade mÈdia calculada na atividade 19, facetado por dia da semana
+insta_orders %>%
+  inner_join(insta_products, by = 'order_id') %>%
+  filter(product_id %in%  bananas) %>%
+  group_by(order_dow, order_hour_of_day) %>%
+  summarise(count = n_distinct(order_id)) %>%
+  ungroup() %>%
+  ggplot(aes(x = count)) +
+  geom_histogram(breaks = seq(from = 0, to = 850, by = 5)) +
+  facet_wrap(~order_dow, ncol = 2)
 
+#22 # Teste se h· diferenÁa nas vendas por hora entre os dias 3 e 4 usando o teste de wilcoxon e utilizando a simulaÁ„o da aula de testes
+insta_orders %>%
+  group_by(order_dow, order_hour_of_day) %>%
+  summarise(count = n()) %>%
+  ungroup() -> orders_days
 
-#22 # Teste se h√° diferen√ßa nas vendas por hora entre os dias 3 e 4 usando o teste de wilcoxon e utilizando a simula√ß√£o da aula de testes
+wilcox.test(count ~ order_dow, data = orders_days, alternative = "two.sided", subset = order_dow %in% c(3, 4), conf.int = TRUE)
 

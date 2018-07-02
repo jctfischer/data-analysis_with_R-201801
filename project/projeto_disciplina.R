@@ -1,3 +1,5 @@
+#Eduarda da Silva Pereira de Souza
+#Jose Carlos Trindade Fischer
 # Descrição dos dados: https://tech.instacart.com/3-million-instacart-orders-open-sourced-d40d29ead6f2
 # Estamos trabalhando com somente uma amostra do total de pedidos. O dataset abaixo não possui 3 milhões de pedidos ;)
 library( tidyverse )
